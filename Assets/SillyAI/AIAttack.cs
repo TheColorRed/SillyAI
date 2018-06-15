@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -13,10 +14,13 @@ namespace SillyAI {
 
   }
 
+  [System.Serializable]
+  public class AIAttackStart : UnityEvent<AIBrain> { }
+
   public enum AttackPriority { Any, Closest, Furthest, Strongest, Weakest, Healthiest, Sickest, Oldest, Youngest }
 
   [AddComponentMenu("SillyAI/Attack"), DisallowMultipleComponent, RequireComponent(typeof(AIBrain))]
-  public class Attack : MonoBehaviour {
+  public class AIAttack : MonoBehaviour {
 
     [Tooltip("The maximum distance another character can be to be attackable.")]
     public float attackDistance = 5f;
@@ -33,10 +37,12 @@ namespace SillyAI {
     [Tooltip("The types of attacks this character can perform.")]
     public List<AttackType> attackTypes = new List<AttackType>();
     [Tooltip("What type of units this character can attack.")]
-    public List<UnitType> canAttack;
+    public UnitType[] attackableUnitTypes;
+
+    public AIAttackStart attackStart;
 
     private AIBrain brain;
-    private AIBrain ToAttack = null;
+    private AIBrain toAttack = null;
 
     void Awake() {
       brain = GetComponent<AIBrain>();
@@ -45,41 +51,44 @@ namespace SillyAI {
     void Update() {
       switch (attackPriority) {
         case AttackPriority.Closest:
-          ToAttack = brain.Closest();
+          toAttack = brain.Closest(attackableUnitTypes);
           break;
         case AttackPriority.Furthest:
-          ToAttack = brain.Furthest();
+          toAttack = brain.Furthest(attackableUnitTypes);
           break;
         case AttackPriority.Weakest:
-          ToAttack = brain.Weakest();
+          toAttack = brain.Weakest(attackableUnitTypes);
           break;
         case AttackPriority.Strongest:
-          ToAttack = brain.Strongest();
+          toAttack = brain.Strongest(attackableUnitTypes);
           break;
         case AttackPriority.Healthiest:
-          ToAttack = brain.Healthiest();
+          toAttack = brain.Healthiest(attackableUnitTypes);
           break;
         case AttackPriority.Sickest:
-          ToAttack = brain.Sickliest();
+          toAttack = brain.Sickliest(attackableUnitTypes);
           break;
         case AttackPriority.Oldest:
-          ToAttack = brain.Oldest();
+          toAttack = brain.Oldest(attackableUnitTypes);
           break;
         case AttackPriority.Youngest:
-          ToAttack = brain.Youngest();
+          toAttack = brain.Youngest(attackableUnitTypes);
           break;
       }
-      if (ToAttack) {
-        brain.subDestinations.Add(ToAttack.GetComponent<Destination>());
+      if (toAttack) {
+        if (!brain.subDestinations.Contains(toAttack.GetComponent<AIDestination>())) {
+          brain.subDestinations.Add(toAttack.GetComponent<AIDestination>());
+        }
+        attackStart.Invoke(toAttack);
       }
     }
 
-    public bool InAttackZone(Attack other) {
+    public bool InAttackZone(AIBrain other) {
       float distance = Vector3.Distance(transform.position, other.transform.position);
-      return distance <= other.attackDistance;
+      return distance <= other.GetComponent<AIAttack>().attackDistance;
     }
 
-    public void ApplyDamage(Health otherHealth, float amount) {
+    public void ApplyDamage(AIHealth otherHealth, float amount) {
       otherHealth.RemoveAmount(amount);
     }
 

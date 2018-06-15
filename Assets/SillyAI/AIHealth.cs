@@ -3,7 +3,7 @@ using UnityEngine;
 namespace SillyAI {
 
   [AddComponentMenu("SillyAI/Health"), DisallowMultipleComponent]
-  public class Health : MonoBehaviour {
+  public class AIHealth : MonoBehaviour {
 
     public float maxHealth = 10f;
     public float startingHealth = 10f;
