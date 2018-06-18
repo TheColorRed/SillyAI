@@ -20,7 +20,7 @@ namespace SillyAI {
   public enum AttackPriority { Any, Closest, Furthest, Strongest, Weakest, Healthiest, Sickest, Oldest, Youngest }
 
   [AddComponentMenu("SillyAI/Attack"), DisallowMultipleComponent, RequireComponent(typeof(AIBrain))]
-  public class AIAttack : MonoBehaviour {
+  public class AIAttack : AI {
 
     [Tooltip("The maximum distance another character can be to be attackable.")]
     public float attackDistance = 5f;
@@ -41,12 +41,7 @@ namespace SillyAI {
 
     public AIAttackStart attackStart;
 
-    private AIBrain brain;
     private AIBrain toAttack = null;
-
-    void Awake() {
-      brain = GetComponent<AIBrain>();
-    }
 
     void Update() {
       switch (attackPriority) {
@@ -83,9 +78,9 @@ namespace SillyAI {
       }
     }
 
-    public bool InAttackZone(AIBrain other) {
-      float distance = Vector3.Distance(transform.position, other.transform.position);
-      return distance <= other.GetComponent<AIAttack>().attackDistance;
+    public bool InAttackZone(AIBrain otherBrain) {
+      float distance = Vector3.Distance(transform.position, otherBrain.transform.position);
+      return distance <= otherBrain.GetComponent<AIAttack>().attackDistance;
     }
 
     public void ApplyDamage(AIHealth otherHealth, float amount) {

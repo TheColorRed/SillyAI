@@ -31,16 +31,9 @@ namespace SillyAI {
       if (trigger) trigger.isTrigger = true;
     }
 
-    void OnTriggerEnter(Collider other) {
-      AIWaypoints waypoint = transform.parent.GetComponent<AIWaypoints>();
-      if (waypoint) {
-        // waypoint.Next(other.GetComponent<>());
-      }
-      enterTrigger.Invoke(other.GetComponent<AIBrain>());
-    }
-
 #if UNITY_EDITOR
     void OnDrawGizmosSelected() {
+      if (!transform.parent) return;
       AIWaypoints waypoint = transform.parent.GetComponent<AIWaypoints>();
       if (!waypoint) return;
       int index = transform.GetSiblingIndex() + 1;
@@ -50,23 +43,6 @@ namespace SillyAI {
       Handles.Label(transform.position, index.ToString(), gui);
     }
 #endif
-    // void OnDrawGizmos() {
-    //   // Gizmos.matrix = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one) * Matrix4x4.Rotate(Quaternion.Euler(0, 0, 45));
-    //   // Gizmos.DrawIcon(transform.position, "Destination.png", false);
-
-    //   var mesh = new Mesh();
-    //   mesh.vertices = new Vector3[] {
-    //     new Vector3(-0.5f, 0, -0.5f),
-    //     new Vector3(-0.5f, 0, 0.5f),
-    //     new Vector3(0.5f, 0, 0.5f),
-    //     new Vector3(0.5f, 0, -0.5f),
-    //   };
-    //   mesh.triangles = new int[] { 0, 1, 2, 0, 2, 3 };
-
-    //   mesh.normals = Enumerable.Repeat(Vector3.forward, 4).ToArray();
-
-    //   Gizmos.DrawMesh(mesh, transform.position, transform.rotation);
-    // }
   }
 
 }

@@ -10,11 +10,11 @@ namespace SillyAI {
   public enum UnitType { None, Ground, Air, Water }
 
   [AddComponentMenu("SillyAI/Brain"), DisallowMultipleComponent, RequireComponent(typeof(NavMeshAgent))]
-  public class AIBrain : MonoBehaviour {
+  public class AIBrain : AI {
 
     [Header("Character Distances")]
     [Tooltip("The maximum distance another character is detectable to the current character.")]
-    public Collider viewDistance;
+    public Collider viewDistanceTrigger;
 
     [Header("Character Attack Information")]
     [Tooltip("The type of unit.")]
@@ -35,12 +35,15 @@ namespace SillyAI {
     private float dob = 0f;
     private bool destDone = false;
 
+    public readonly AIEvent events = new AIEvent();
+
     public float Age {
       get { return Time.time - dob; }
     }
 
-    void Awake() {
-      if (viewDistance) viewDistance.isTrigger = true;
+    new void Awake() {
+      base.Awake();
+      if (viewDistanceTrigger) viewDistanceTrigger.isTrigger = true;
       navMeshAgent = GetComponent<NavMeshAgent>();
       health = GetComponent<AIHealth>();
       path = new NavMeshPath();
@@ -61,23 +64,22 @@ namespace SillyAI {
       if (!destDone && dist != Mathf.Infinity && navMeshAgent.pathStatus == NavMeshPathStatus.PathComplete && dist == 0) {
         destDone = true;
         destinationComplete.Invoke();
-        Debug.Log("Dest Done");
       }
     }
 
     void LateUpdate() {
       // Force the view collider to a trigger
-      if (viewDistance) viewDistance.isTrigger = true;
+      if (viewDistanceTrigger) viewDistanceTrigger.isTrigger = true;
     }
 
     void OnTriggerEnter(Collider other) {
       // If we collide with ourself don't add
       if (other.transform.IsChildOf(transform)) return;
-      AIBrain brain = other.GetComponent<AIBrain>();
+      AIBrain otherBrain = other.GetComponent<AIBrain>();
       // Is this a character?
-      if (brain == null) return;
-      if (!others.Contains(brain)) {
-        others.Add(brain);
+      if (otherBrain == null) return;
+      if (!others.Contains(otherBrain)) {
+        others.Add(otherBrain);
       }
     }
 

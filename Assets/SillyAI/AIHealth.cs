@@ -3,7 +3,7 @@ using UnityEngine;
 namespace SillyAI {
 
   [AddComponentMenu("SillyAI/Health"), DisallowMultipleComponent]
-  public class AIHealth : MonoBehaviour {
+  public class AIHealth : AI {
 
     public float maxHealth = 10f;
     public float startingHealth = 10f;
@@ -19,7 +19,8 @@ namespace SillyAI {
       get { return health / maxHealth; }
     }
 
-    void Awake() {
+    new void Awake() {
+      base.Awake();
       _health = startingHealth;
     }
 
