@@ -48,8 +48,8 @@ namespace SillyAI {
       health = GetComponent<AIHealth>();
       path = new NavMeshPath();
       dob = Time.time;
-      var hasDestination = GetComponent<AIDestination>();
-      if (!hasDestination) gameObject.AddComponent<AIDestination>();
+      // var hasDestination = GetComponent<AIDestination>();
+      // if (!hasDestination) gameObject.AddComponent<AIDestination>();
     }
 
     void Start() {

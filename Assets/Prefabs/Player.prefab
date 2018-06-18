@@ -58,6 +58,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RenderingLayerMask: 4294967295
   m_Materials:
   - {fileID: 2100000, guid: 0d1b32fcf955e449c878e0f2537fb7c6, type: 2}
   m_StaticBatchInfo:
@@ -119,7 +120,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   waypointGroup: {fileID: 0}
   waypointDistance: 5
-  startingWaypoint: 4
+  startingWaypoint: 6
   specificStartLocation: {fileID: 0}
   nextWaypointTrigger:
     m_PersistentCalls:
@@ -147,16 +148,16 @@ NavMeshAgent:
   m_GameObject: {fileID: 1055725584111388}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 1
+  m_Radius: 0.5
   m_Speed: 20
-  m_Acceleration: 25
+  m_Acceleration: 50
   avoidancePriority: 50
   m_AngularSpeed: 120
   m_StoppingDistance: 0
   m_AutoTraverseOffMeshLink: 0
-  m_AutoBraking: 1
+  m_AutoBraking: 0
   m_AutoRepath: 1
   m_Height: 2
   m_BaseOffset: 1
   m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 1
+  m_ObstacleAvoidanceType: 2

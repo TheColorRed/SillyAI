@@ -8,17 +8,25 @@ namespace SillyAI {
   [System.Serializable]
   public class NextWaypoint : UnityEvent<AIDestination> { }
 
-  public enum GoTo { First, Last, ClosestByAir, FurthestByAir, ClosestByGround, FurthestByGround, Specific }
+  public enum StartType {
+    First, Last,
+    Random, RoundRobin,
+    ClosestByAir, FurthestByAir,
+    ClosestByGround, FurthestByGround,
+    LeastTraffic, MostTraffic,
+    Weighted, Specific
+  }
 
   [DisallowMultipleComponent, RequireComponent(typeof(NavMeshAgent))]
   public class AITraverseWaypoints : AI {
 
-    [Tooltip("A GameObject with child AIDestination's")]
+    [Tooltip("A GameObject with child AIDestination's.")]
     public AIWaypoints waypointGroup;
     [Tooltip("The distance from the waypoint to go to the next.")]
     public float waypointDistance;
-    [Tooltip("Which Waypoint to start at")]
-    public GoTo startingWaypoint;
+    [Tooltip("Which Waypoint to start at.")]
+    public StartType startingWaypoint;
+    [Tooltip("The starting waypoint. Requires \"Starting Waypoint\" to be set as \"Specific\".")]
     public AIDestination specificStartLocation;
 
     [Space]
@@ -33,6 +41,7 @@ namespace SillyAI {
     private AIDestination _current;
     private NavMeshPath path;
     private NavMeshAgent agent;
+    public static AIDestination roundRobinLastLocation;
 
 
     new void Awake() {
@@ -47,30 +56,48 @@ namespace SillyAI {
 
     void OnDisable() {
       RemoveEventListener("NextWaypoint", NextWaypoint);
+      waypointGroup.events.RemoveEventListener("AIDestinationMoved", DestinationMoved);
     }
 
     void Start() {
       if (!waypointGroup) return;
+      waypointGroup.events.AddEventListener("AIDestinationMoved", DestinationMoved);
       switch (startingWaypoint) {
-        case GoTo.First:
+        case StartType.First:
           current = waypointGroup.GetFirstWaypoint();
           break;
-        case GoTo.Last:
+        case StartType.Last:
           current = waypointGroup.GetLastWaypoint();
           break;
-        case GoTo.ClosestByAir:
+        case StartType.Random:
+          current = waypointGroup.GetRandomWaypoint();
+          break;
+        case StartType.RoundRobin:
+          current = waypointGroup.GetNextWaypoint(roundRobinLastLocation);
+          roundRobinLastLocation = current;
+          break;
+        case StartType.ClosestByAir:
           current = waypointGroup.GetClosestByAir(brain);
           break;
-        case GoTo.FurthestByAir:
+        case StartType.FurthestByAir:
           current = waypointGroup.GetFurthestByAir(brain);
           break;
-        case GoTo.ClosestByGround:
+        case StartType.ClosestByGround:
           current = waypointGroup.GetClosestByGround(brain);
           break;
-        case GoTo.FurthestByGround:
+        case StartType.FurthestByGround:
           current = waypointGroup.GetFurthestByGround(brain);
           break;
-        case GoTo.Specific:
+        case StartType.Weighted:
+          current = waypointGroup.GetWeightedWaypoint();
+          break;
+        case StartType.LeastTraffic:
+          current = waypointGroup.GetLeastTrafficWaypoint();
+          break;
+        case StartType.MostTraffic:
+          current = waypointGroup.GetMostTrafficWaypoint();
+          break;
+        case StartType.Specific:
           if (specificStartLocation) current = specificStartLocation;
           else current = waypointGroup.GetFirstWaypoint();
           break;
@@ -99,6 +126,14 @@ namespace SillyAI {
         agent.CalculatePath(current.position, path);
         agent.SetPath(path);
       }
+    }
+
+    void DestinationMoved(Event e) {
+      AIDestination destination = (AIDestination)e.data;
+      if (!destination) return;
+      if (current != destination) return;
+      agent.CalculatePath(destination.position, path);
+      agent.SetPath(path);
     }
 
     void OnDrawGizmosSelected() {

@@ -26,6 +26,8 @@ namespace SillyAI {
 
   public class AIEvent {
 
+    public static readonly AIEvent aiEvent = new AIEvent();
+
     private Dictionary<string, List<UnityAction<Event>>> eventList = new Dictionary<string, List<UnityAction<Event>>>();
 
     public void AddEventListener(string name, UnityAction<Event> action) {
@@ -54,5 +56,6 @@ namespace SillyAI {
         }
       }
     }
+
   }
 }

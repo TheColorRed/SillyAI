@@ -10,14 +10,9 @@ namespace SillyAI {
 
     public bool closedCircut = false;
 
-    private List<AIDestination> waypoints = new List<AIDestination>();
+    private List<AIDestination> waypoints { get { return GetComponentsInChildren<AIDestination>().ToList(); } }
 
-    void Awake() {
-      foreach (Transform item in transform) {
-        AIDestination dest = item.GetComponent<AIDestination>();
-        if (dest) waypoints.Add(dest);
-      }
-    }
+    public readonly AIEvent events = new AIEvent();
 
     public AIDestination GetWaypoint(int index) {
       return waypoints[Mathf.Clamp(index, 0, waypoints.Count - 1)];
@@ -25,11 +20,11 @@ namespace SillyAI {
 
     public AIDestination GetNextWaypoint(AIDestination current) {
       int idx = waypoints.FindIndex(item => item == current);
-      if (idx < 0) idx = 0;
+      if (idx < 0) return GetFirstWaypoint();
       if (idx + 1 >= waypoints.Count && closedCircut) {
         return GetFirstWaypoint();
       } else if (idx + 1 >= waypoints.Count && !closedCircut) {
-        return null;
+        return GetLastWaypoint();
       }
       return waypoints[idx + 1];
     }
@@ -42,6 +37,11 @@ namespace SillyAI {
     public AIDestination GetLastWaypoint() {
       if (waypoints.Count == 0) return null;
       return waypoints[waypoints.Count - 1];
+    }
+
+    public AIDestination GetRandomWaypoint() {
+      if (waypoints.Count == 0) return null;
+      return waypoints[Random.Range(0, waypoints.Count)];
     }
 
     public AIDestination GetClosestByAir(AIBrain brain) {
@@ -66,6 +66,24 @@ namespace SillyAI {
 
     public AIDestination GetFurthestByGround(AIBrain brain) {
       return GetDistances(brain).Aggregate((curr, item) => item.Value > curr.Value ? item : curr).Key;
+    }
+
+    public AIDestination GetWeightedWaypoint() {
+      List<int> indexes = new List<int>();
+      for (var i = 0; i < waypoints.Count; i++) {
+        for (var j = 0; j < waypoints[i].weight; j++) {
+          indexes.Add(i);
+        }
+      }
+      return waypoints[indexes[Random.Range(0, indexes.Count)]];
+    }
+
+    public AIDestination GetLeastTrafficWaypoint() {
+      return waypoints.Aggregate((curr, item) => item.brainCount < curr.brainCount ? item : curr);
+    }
+
+    public AIDestination GetMostTrafficWaypoint() {
+      return waypoints.Aggregate((curr, item) => item.brainCount > curr.brainCount ? item : curr);
     }
 
     public void CreateWaypoint(Vector3 localPosition, int index = -1) {
@@ -109,6 +127,7 @@ namespace SillyAI {
       }
       return distances;
     }
+
     void OnDrawGizmosSelected() {
       if (transform.childCount < 2) return;
       Vector3 current = transform.GetComponentInChildren<AIDestination>().transform.position;
