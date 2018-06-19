@@ -119,9 +119,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   waypointGroup: {fileID: 0}
-  waypointDistance: 5
+  waypointDistanceTrigger: 5
   startingWaypoint: 6
   specificStartLocation: {fileID: 0}
+  direction: 0
+  reachDestinationFirst: 0
+  patrol: 0
   nextWaypointTrigger:
     m_PersistentCalls:
       m_Calls: []

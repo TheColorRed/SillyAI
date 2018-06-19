@@ -29,6 +29,17 @@ namespace SillyAI {
       return waypoints[idx + 1];
     }
 
+    public AIDestination GetPreviousWaypoint(AIDestination current) {
+      int idx = waypoints.FindIndex(item => item == current);
+      if (idx < 0) return GetLastWaypoint();
+      if (idx - 1 < 0 && closedCircut) {
+        return GetLastWaypoint();
+      } else if (idx - 1 < 0 && !closedCircut) {
+        return GetFirstWaypoint();
+      }
+      return waypoints[idx - 1];
+    }
+
     public AIDestination GetFirstWaypoint() {
       if (waypoints.Count == 0) return null;
       return waypoints[0];
@@ -133,6 +144,7 @@ namespace SillyAI {
       Vector3 current = transform.GetComponentInChildren<AIDestination>().transform.position;
       Gizmos.color = new Color(0.8f, 0.4f, 0);
       foreach (Transform item in transform) {
+        if (!item.gameObject.activeSelf) continue;
         AIDestination dest = item.GetComponent<AIDestination>();
         if (!dest) continue;
         Gizmos.DrawLine(current, item.position);

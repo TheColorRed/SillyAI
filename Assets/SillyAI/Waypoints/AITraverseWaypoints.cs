@@ -16,18 +16,30 @@ namespace SillyAI {
     LeastTraffic, MostTraffic,
     Weighted, Specific
   }
+  public enum TraverseDirection { Forward, Backward }
 
   [DisallowMultipleComponent, RequireComponent(typeof(NavMeshAgent))]
   public class AITraverseWaypoints : AI {
 
+    [Header("Waypoint Management")]
     [Tooltip("A GameObject with child AIDestination's.")]
     public AIWaypoints waypointGroup;
     [Tooltip("The distance from the waypoint to go to the next.")]
-    public float waypointDistance;
+    public float waypointDistanceTrigger;
     [Tooltip("Which Waypoint to start at.")]
     public StartType startingWaypoint;
     [Tooltip("The starting waypoint. Requires \"Starting Waypoint\" to be set as \"Specific\".")]
     public AIDestination specificStartLocation;
+
+    [Header("Direction Management")]
+    [SerializeField, Tooltip("Which direction should the AI start traversing through the waypoints?")]
+    private TraverseDirection direction = TraverseDirection.Forward;
+    [Tooltip("Should the AI reach the destination before traversing in the opposite direction when calling \"SetDirection()\" or \"ReverseDirection()\"?")]
+    public bool reachDestinationFirst = false;
+
+    [Header("Patroling Management")]
+    [Tooltip("Should the AI traverse back and forth through the waypoints? If enabled, once the AI gets to the first or last waypoint it will traverse in the opposite direction.")]
+    public bool patrol;
 
     [Space]
     public NextWaypoint nextWaypointTrigger;
@@ -42,7 +54,6 @@ namespace SillyAI {
     private NavMeshPath path;
     private NavMeshAgent agent;
     public static AIDestination roundRobinLastLocation;
-
 
     new void Awake() {
       base.Awake();
@@ -112,7 +123,7 @@ namespace SillyAI {
     void Update() {
       if (!current) return;
       float dist = Vector3.Distance(transform.position, current.position);
-      if (dist <= waypointDistance) {
+      if (dist <= waypointDistanceTrigger) {
         DispatchEvent(new Event("NextWaypoint").SetData(current));
       }
     }
@@ -120,12 +131,37 @@ namespace SillyAI {
     void NextWaypoint(Event e) {
       if ((AIDestination)e.data != current) return;
       if (!waypointGroup) return;
-      AIDestination dest = waypointGroup.GetNextWaypoint(current);
+      AIDestination dest = null;
+      if (patrol) {
+        if (direction == TraverseDirection.Forward && current == waypointGroup.GetLastWaypoint()) {
+          direction = TraverseDirection.Backward;
+        } else if (direction == TraverseDirection.Backward && current == waypointGroup.GetFirstWaypoint()) {
+          direction = TraverseDirection.Forward;
+        }
+      }
+      if (direction == TraverseDirection.Forward) {
+        dest = waypointGroup.GetNextWaypoint(current);
+      } else if (direction == TraverseDirection.Backward) {
+        dest = waypointGroup.GetPreviousWaypoint(current);
+      }
       if (dest != null) {
         current = dest;
         agent.CalculatePath(current.position, path);
         agent.SetPath(path);
       }
+    }
+
+    public void SetDirection(TraverseDirection direction) {
+      this.direction = direction;
+      if (reachDestinationFirst) return;
+      DispatchEvent(new Event("NextWaypoint").SetData(current));
+    }
+
+    public void ReverseDirection() {
+      if (direction == TraverseDirection.Forward) direction = TraverseDirection.Backward;
+      if (direction == TraverseDirection.Backward) direction = TraverseDirection.Forward;
+      if (reachDestinationFirst) return;
+      DispatchEvent(new Event("NextWaypoint").SetData(current));
     }
 
     void DestinationMoved(Event e) {
@@ -141,7 +177,7 @@ namespace SillyAI {
       if (current) Gizmos.DrawLine(transform.position, current.position);
 
       Gizmos.color = Color.red;
-      Gizmos.DrawWireSphere(transform.position, waypointDistance);
+      Gizmos.DrawWireSphere(transform.position, waypointDistanceTrigger);
     }
 
   }

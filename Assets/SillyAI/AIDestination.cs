@@ -65,7 +65,7 @@ namespace SillyAI {
 
 #if UNITY_EDITOR
     void OnDrawGizmosSelected() {
-      if (!transform.parent) return;
+      if (!transform.parent || !gameObject.activeSelf) return;
       AIWaypoints waypoints = transform.parent.GetComponent<AIWaypoints>();
       if (!waypoints) return;
       int index = transform.GetSiblingIndex() + 1;
