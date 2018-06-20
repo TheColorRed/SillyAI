@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace SillyAI {
 
+  [AddComponentMenu("SillyAI/AI Waypoints")]
   public class AIWaypoints : MonoBehaviour {
 
     public bool closedCircut = false;

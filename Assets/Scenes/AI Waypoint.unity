@@ -654,8 +654,8 @@ MonoBehaviour:
   parent: {fileID: 878253278}
   waypoints: {fileID: 282338982}
   text: {fileID: 2046579087}
-  interval: 1000
-  spawnCount: 1
+  interval: 5
+  spawnCount: 1000
 --- !u!223 &714712615
 Canvas:
   m_ObjectHideFlags: 0

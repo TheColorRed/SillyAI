@@ -12,7 +12,7 @@ namespace SillyAI {
   [System.Serializable]
   public class DestinationTrigger : UnityEvent<AIBrain> { }
 
-  [AddComponentMenu("SillyAI/Destination"), DisallowMultipleComponent]
+  [AddComponentMenu("SillyAI/AI Destination"), DisallowMultipleComponent]
   public class AIDestination : MonoBehaviour {
 
     [Tooltip("The amount of influence this destination has.")]
@@ -39,7 +39,7 @@ namespace SillyAI {
     }
 
     void Update() {
-      if (lastPosition != transform.position) {
+      if (lastPosition != transform.position && transform.parent) {
         AIWaypoints waypoints = transform.parent.GetComponent<AIWaypoints>();
         if (waypoints) {
           waypoints.events.DispatchEvent(new Event("AIDestinationMoved").SetData(this));

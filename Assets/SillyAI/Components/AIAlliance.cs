@@ -1,7 +1,7 @@
 using UnityEngine;
 
 namespace SillyAI {
-  [AddComponentMenu("SillyAI/Alliance"), DisallowMultipleComponent]
+  [AddComponentMenu("SillyAI/AI Alliance"), DisallowMultipleComponent]
   public class AIAlliance : AI {
 
   }

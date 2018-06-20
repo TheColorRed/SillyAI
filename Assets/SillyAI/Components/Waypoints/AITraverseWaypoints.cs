@@ -18,7 +18,7 @@ namespace SillyAI {
   }
   public enum TraverseDirection { Forward, Backward }
 
-  [DisallowMultipleComponent, RequireComponent(typeof(NavMeshAgent))]
+  [AddComponentMenu("SillyAI/AI Traverse"), DisallowMultipleComponent]
   public class AITraverseWaypoints : AI {
 
     [Header("Waypoint Management")]
@@ -51,14 +51,14 @@ namespace SillyAI {
 
     [Readonly, SerializeField]
     private AIDestination _current;
-    private NavMeshPath path;
-    private NavMeshAgent agent;
+    // private NavMeshPath path;
+    // private NavMeshAgent agent;
     public static AIDestination roundRobinLastLocation;
 
     new void Awake() {
       base.Awake();
-      agent = GetComponent<NavMeshAgent>();
-      path = new NavMeshPath();
+      // agent = GetComponent<NavMeshAgent>();
+      // path = new NavMeshPath();
     }
 
     void OnEnable() {
@@ -116,8 +116,7 @@ namespace SillyAI {
           current = waypointGroup.GetFirstWaypoint();
           break;
       }
-      agent.CalculatePath(current.position, path);
-      agent.SetPath(path);
+      brain.SetDestination(current.position);
     }
 
     void Update() {
@@ -129,9 +128,13 @@ namespace SillyAI {
     }
 
     void NextWaypoint(Event e) {
-      if ((AIDestination)e.data != current) return;
-      if (!waypointGroup) return;
-      AIDestination dest = null;
+      // If the new destination is the same as the current don't continue
+      // If there is no waypoint group set don't continue
+      if ((AIDestination)e.data != current || !waypointGroup) return;
+      // Set an empty destination
+      AIDestination destination = null;
+
+      // If patrolling is enabled toggle directions if needed
       if (patrol) {
         if (direction == TraverseDirection.Forward && current == waypointGroup.GetLastWaypoint()) {
           direction = TraverseDirection.Backward;
@@ -139,15 +142,20 @@ namespace SillyAI {
           direction = TraverseDirection.Forward;
         }
       }
+
+      // If the direction is forward get the next waypoint
       if (direction == TraverseDirection.Forward) {
-        dest = waypointGroup.GetNextWaypoint(current);
-      } else if (direction == TraverseDirection.Backward) {
-        dest = waypointGroup.GetPreviousWaypoint(current);
+        destination = waypointGroup.GetNextWaypoint(current);
       }
-      if (dest != null) {
-        current = dest;
-        agent.CalculatePath(current.position, path);
-        agent.SetPath(path);
+      // If the direction is backward get the previous waypoint
+      else if (direction == TraverseDirection.Backward) {
+        destination = waypointGroup.GetPreviousWaypoint(current);
+      }
+
+      // If we have a destination set the new destination
+      if (destination != null) {
+        current = destination;
+        brain.SetDestination(current.position);
       }
     }
 
@@ -168,8 +176,7 @@ namespace SillyAI {
       AIDestination destination = (AIDestination)e.data;
       if (!destination) return;
       if (current != destination) return;
-      agent.CalculatePath(destination.position, path);
-      agent.SetPath(path);
+      brain.SetDestination(current.position);
     }
 
     void OnDrawGizmosSelected() {
