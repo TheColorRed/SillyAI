@@ -56,9 +56,9 @@ namespace SillyAI {
       viewTrigger.radius = viewDistanceRadius;
 
       // Add a kinematic rigidbody for triggers
-      aiRigidbody = GetComponent<Rigidbody>();
-      if (!aiRigidbody) aiRigidbody = gameObject.AddComponent<Rigidbody>();
-      aiRigidbody.isKinematic = true;
+      // aiRigidbody = GetComponent<Rigidbody>();
+      // if (!aiRigidbody) aiRigidbody = gameObject.AddComponent<Rigidbody>();
+      // aiRigidbody.isKinematic = true;
 
       // Setup the nav mesh agent
       health = GetComponent<AIHealth>();
